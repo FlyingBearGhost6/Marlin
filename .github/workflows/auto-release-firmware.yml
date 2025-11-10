@@ -1,0 +1,218 @@
+name: Release Firmware Options
+
+on:
+  push:
+    tags:
+      - 'release-*'
+  workflow_dispatch:
+    inputs:
+      platformio_envs:
+        description: "Optional list of PlatformIO environments (space / comma / newline separated). Leave blank to auto-detect with mfenvs."
+        required: false
+        default: ''
+
+jobs:
+  define-env-matrix:
+    name: Determine Firmware Environments
+    runs-on: ubuntu-22.04
+    env:
+      PLATFORMIO_ENVS: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.platformio_envs) || '' }}
+    outputs:
+      env_matrix: ${{ steps.collect.outputs.envs_json }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-release-v1
+          restore-keys: |
+            ${{ runner.os }}-pip-release-
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.platformio
+            .pio/build
+            .pio/libdeps
+          key: ${{ runner.os }}-pio-release-v1
+          restore-keys: |
+            ${{ runner.os }}-pio-release-
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+          architecture: 'x64'
+
+      - name: Install PlatformIO
+        run: |
+          pip install -U platformio
+          pio upgrade --dev
+          pio pkg update --global
+
+      - name: Resolve PlatformIO environments
+        id: collect
+        run: |
+          set -eo pipefail
+          mkdir -p .pio
+          ENVS_FILE=".pio/supported_envs.txt"
+          : > "$ENVS_FILE"
+
+          if [[ -n "$PLATFORMIO_ENVS" ]]; then
+            echo "Using provided PlatformIO environment list."
+            echo "$PLATFORMIO_ENVS" | tr ',;' ' ' | tr ' ' '\n' | sed '/^[[:space:]]*$/d' >> "$ENVS_FILE"
+          else
+            echo "Detecting PlatformIO environments with mfenvs..."
+            ENVLIST=$(./buildroot/bin/mfenvs -n) || {
+              echo "::error::Failed to run mfenvs."
+              exit 1
+            }
+            ENVLIST=${ENVLIST##*: [ }
+            ENVLIST=${ENVLIST% ]}
+            if [[ -z "$ENVLIST" ]]; then
+              echo "::error::mfenvs did not return any environments."
+              exit 1
+            fi
+            printf '%s\n' $ENVLIST >> "$ENVS_FILE"
+          fi
+
+          if [[ ! -s "$ENVS_FILE" ]]; then
+            echo "::error::No PlatformIO environments resolved."
+            exit 1
+          fi
+
+          python -c "import json, pathlib; envs=[line.strip() for line in pathlib.Path('.pio/supported_envs.txt').read_text().splitlines() if line.strip()]; print(f'envs_json={json.dumps(envs)}')" >> "$GITHUB_OUTPUT"
+
+          echo "Resolved PlatformIO environments:"
+          cat "$ENVS_FILE"
+
+  build-firmware:
+    name: Build ${{ matrix.env }}
+    runs-on: ubuntu-22.04
+    needs: define-env-matrix
+    strategy:
+      fail-fast: false
+      matrix:
+        env: ${{ fromJSON(needs['define-env-matrix'].outputs.env_matrix) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-release-v1
+          restore-keys: |
+            ${{ runner.os }}-pip-release-
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.platformio
+            .pio/build
+            .pio/libdeps
+          key: ${{ runner.os }}-pio-release-v1
+          restore-keys: |
+            ${{ runner.os }}-pio-release-
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+          architecture: 'x64'
+
+      - name: Install PlatformIO and dependencies
+        run: |
+          pip install -U platformio
+          pio upgrade --dev
+          pio pkg update --global
+          sudo apt-get update
+          sudo apt-get install -y build-essential libsdl2-dev libsdl2-net-dev libglm-dev zip
+
+      - name: Build firmware
+        run: |
+          set -eo pipefail
+          echo "::group::PlatformIO build (${{ matrix.env }})"
+          pio run -e "${{ matrix.env }}"
+          echo "::endgroup::"
+
+      - name: Collect artifacts
+        run: |
+          set -eo pipefail
+          mkdir -p artifacts
+          if [[ ! -f ".pio/build/${{ matrix.env }}/firmware.bin" ]]; then
+            echo "::error::Expected firmware.bin for environment ${{ matrix.env }} not found."
+            exit 1
+          fi
+          zip -j artifacts/firmware-${{ matrix.env }}.zip ".pio/build/${{ matrix.env }}/firmware.bin"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-${{ matrix.env }}
+          path: artifacts/firmware-${{ matrix.env }}.zip
+          retention-days: 7
+
+  package-and-release:
+    name: Package Firmware Bundle
+    runs-on: ubuntu-22.04
+    needs:
+      - define-env-matrix
+      - build-firmware
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download firmware artifacts
+        uses: actions/download-artifact@v5
+        with:
+          pattern: firmware-*
+          merge-multiple: true
+          path: release-dist
+
+      - name: Prepare release assets
+        id: assets
+        run: |
+          set -eo pipefail
+          shopt -s globstar nullglob
+          files=()
+          for path in release-dist/**/*.zip; do
+            files+=("$path")
+          done
+          if [[ ${#files[@]} -eq 0 ]]; then
+            echo "::error::No firmware zip artifacts present."
+            exit 1
+          fi
+          {
+            echo 'files<<EOF'
+            for file in "${files[@]}"; do
+              realpath "$file"
+            done
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Publish GitHub release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.assets.outputs.files }}
+          name: Firmware Options ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
