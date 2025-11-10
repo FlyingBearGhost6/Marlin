@@ -275,9 +275,11 @@ QUICK_ACCESS_BEGIN(
     add_control(BTN_X, BTN_Y, BED_Z, imgZoffset);
   QUICK_ACCESS_BUTTON_END();
 
-  QUICK_ACCESS_BUTTON_BEGIN();
-    add_control(BTN_X, BTN_Y, menu_ft_motion, imgFixedTimeMotion);
-  QUICK_ACCESS_BUTTON_END();
+  #if ENABLED(FT_MOTION)
+    QUICK_ACCESS_BUTTON_BEGIN();
+      add_control(BTN_X, BTN_Y, menu_ft_motion, imgFixedTimeMotion);
+    QUICK_ACCESS_BUTTON_END();
+  #endif
 
   #if ENABLED(CASE_LIGHT_ENABLE)
     QUICK_ACCESS_BUTTON_BEGIN();
@@ -326,9 +328,11 @@ QUICK_ACCESS_BEGIN(StatusQuickAccessIdle,
     add_control(BTN_X, BTN_Y, BED_Z, imgZoffset);
   QUICK_ACCESS_BUTTON_END();
 
-  QUICK_ACCESS_BUTTON_BEGIN();
-    add_control(BTN_X, BTN_Y, _lcd_bed_tramming, imgTramming);
-  QUICK_ACCESS_BUTTON_END();
+  #if ENABLED(LCD_BED_TRAMMING)
+    QUICK_ACCESS_BUTTON_BEGIN();
+      add_control(BTN_X, BTN_Y, _lcd_bed_tramming, imgTramming);
+    QUICK_ACCESS_BUTTON_END();
+  #endif
 
   QUICK_ACCESS_BUTTON_BEGIN();
     add_control(BTN_X, BTN_Y, FEEDRATE, imgFeedRate64);
@@ -338,13 +342,17 @@ QUICK_ACCESS_BEGIN(StatusQuickAccessIdle,
     add_control(BTN_X, BTN_Y, FLOWRATE, imgFlowRate64);
   QUICK_ACCESS_BUTTON_END();
 
-  QUICK_ACCESS_BUTTON_BEGIN();
-    add_control(BTN_X, BTN_Y, menu_ft_motion, imgFixedTimeMotion);
-  QUICK_ACCESS_BUTTON_END();
+  #if ENABLED(FT_MOTION)
+    QUICK_ACCESS_BUTTON_BEGIN();
+      add_control(BTN_X, BTN_Y, menu_ft_motion, imgFixedTimeMotion);
+    QUICK_ACCESS_BUTTON_END();
+  #endif
 
-  QUICK_ACCESS_BUTTON_BEGIN();
-    add_control(BTN_X, BTN_Y, ui.store_settings, imgSave);
-  QUICK_ACCESS_BUTTON_END();
+  #if ENABLED(EEPROM_SETTINGS)
+    QUICK_ACCESS_BUTTON_BEGIN();
+      add_control(BTN_X, BTN_Y, ui.store_settings, imgSave);
+    QUICK_ACCESS_BUTTON_END();
+  #endif
 
 QUICK_ACCESS_END(StatusQuickAccessIdle)
 
