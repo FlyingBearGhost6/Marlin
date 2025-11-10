@@ -758,6 +758,8 @@
   #include "stm32f4/pins_MKS_ROBIN_NANO_V3.h"       // STM32F4                              env:mks_robin_nano_v3 env:mks_robin_nano_v3_usb_flash_drive env:mks_robin_nano_v3_usb_flash_drive_msc
 #elif MB(MKS_ROBIN_NANO_V3_1)
   #include "stm32f4/pins_MKS_ROBIN_NANO_V3.h"       // STM32F4                              env:mks_robin_nano_v3_1 env:mks_robin_nano_v3_1_usb_flash_drive env:mks_robin_nano_v3_1_usb_flash_drive_msc
+#elif MB(MKS_NANO4_V3_1)
+  #include "stm32f4/pins_MKS_NANO4_V3.1.h"          // STM32F4                              env:mks_nano4_v3_1 env:mks_nano4_v3_1_ft_motion env:mks_nano4_v3_1_bltouch env:mks_nano4_v3_1_bltouch_ft_motion
 #elif MB(MKS_MONSTER8_V1)
   #include "stm32f4/pins_MKS_MONSTER8_V1.h"         // STM32F4                              env:mks_monster8 env:mks_monster8_usb_flash_drive env:mks_monster8_usb_flash_drive_msc
 #elif MB(MKS_MONSTER8_V2)
