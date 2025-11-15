@@ -60,6 +60,11 @@ enum TouchControlType : uint16_t {
   FAN_MANUAL,
   FAN_PRESET,
   CHAMBER_FAN,
+  HEAT_EXT,
+  HEAT_BED,
+  HEATER_MANUAL,
+  FILAMENT_MOVE,
+  BABYSTEP_BUTTON,
   BUTTON
 };
 

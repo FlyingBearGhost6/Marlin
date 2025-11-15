@@ -1140,6 +1140,12 @@ namespace LanguageNarrow_en {
 
   LSTR MSG_G29_PROCESSING				          = _UxGT("Autoleveling...");
   LSTR MSG_G29_VIEW  				              = _UxGT("View current mesh");
+
+  LSTR MSG_EXTRUDER_STATUS                = _UxGT("Extruder");
+  LSTR MSG_MANUAL_BUTTON                  = _UxGT("Manual");
+  LSTR MSG_BED_STATUS                     = _UxGT("Bed Status");
+  LSTR MSG_COOLING_BUTTON                 = _UxGT("Cooling");
+  LSTR MSG_STOP_BUTTON                    = _UxGT("Stop");
 }
 
 namespace LanguageWide_en {

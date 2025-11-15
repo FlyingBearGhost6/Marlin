@@ -71,6 +71,8 @@ enum MarlinImage : uint8_t {
   imgHome,              // Home_64x64x4
   imgBtn52Rounded,      // BtnRounded_64x52x4
   imgBtn39Rounded,      // BtnRounded_42x39x4
+  imgBtn90Rounded,      // BtnRounded_90x64x4
+  imgBtn120Rounded,     // BtnRounded_120x64x4
   imgTimeElapsed,       // Time_Elapsed_32x32x4
   imgTimeRemaining,     // Time_Remaining_32x32x4
   imgFeedRate64,        // Feedrate_64x64x4
@@ -88,6 +90,7 @@ enum MarlinImage : uint8_t {
   imgPause,             // Pause_64x64x4
   imgFixedTimeMotion,   // Fixed_time_motion_64x64x4
   imgAutobed,           // Autobed_64x64x16
+  imgBtnBabystep,       // BtnBabystep_64x64x4
   // Special values - must be at the end!
   imgCount,
   noImage = imgCount,
@@ -152,6 +155,8 @@ extern const tImage SD_64x64x4;
 extern const tImage Home_64x64x4;
 extern const tImage BtnRounded_64x52x4;
 extern const tImage BtnRounded_42x39x4;
+extern const tImage BtnRounded_90x64x4;
+extern const tImage BtnRounded_120x64x4;
 extern const tImage Menu_64x64x4;
 extern const tImage Settings_64x64x4;
 extern const tImage Confirm_64x64x4;
@@ -188,6 +193,8 @@ extern const tImage Stop_64x64x4;
 extern const tImage Pause_64x64x4;
 extern const tImage Fixed_time_motion_64x64x4;
 extern const tImage Autobed_64x64x16;
+
+extern const tImage BtnBabystep_64x64x4;
 
 extern const tImage Slider8x16x4;
 

@@ -271,9 +271,11 @@ QUICK_ACCESS_BEGIN(
     add_control(BTN_X, BTN_Y, FLOWRATE, imgFlowRate64);
   QUICK_ACCESS_BUTTON_END();
   
-  QUICK_ACCESS_BUTTON_BEGIN();
-    add_control(BTN_X, BTN_Y, BED_Z, imgZoffset);
-  QUICK_ACCESS_BUTTON_END();
+  #if ENABLED(BABYSTEPPING)
+    QUICK_ACCESS_BUTTON_BEGIN();
+      add_control(BTN_X, BTN_Y, lcd_babystep_z, imgBtnBabystep);
+    QUICK_ACCESS_BUTTON_END();
+  #endif
 
   #if ENABLED(FT_MOTION)
     QUICK_ACCESS_BUTTON_BEGIN();
@@ -446,7 +448,7 @@ void MarlinUI::draw_status_screen() {
   #elif HAS_LEVELING
     z_off = bedlevel.z_offset;
   #endif
-  #if ENABLED(BABYSTEPPING)
+  #if ENABLED(BABYSTEPPING) && ENABLED(BABYSTEP_DISPLAY_TOTAL)
     z_off += (mps * babystep.axis_total[BS_TOTAL_IND(Z_AXIS)]);
   #endif
   tft_string.set(ftostr43sign(z_off));
@@ -805,6 +807,216 @@ void MarlinUI::fan_screen() {
   TERN_(HAS_TFT_XPT2046, add_control(TFT_WIDTH - 10 - 64 - 8, 420, BACK, imgBack));
 
 }
+
+#define XX_OFFSET 10
+#define YY_OFFSET 80
+#define X_SPACING 10
+#define Y_SPACING 10
+
+void MarlinUI::heater_screen() {
+  const bool busy = printingIsActive();
+  celsius_t currentTemperature, targetTemperature;
+  currentTemperature = thermalManager.wholeDegHotend(H_E0);
+  targetTemperature = thermalManager.degTargetHotend(H_E0);
+  TERN_(TOUCH_SCREEN, touch.clear());
+  defer_status_screen(true);
+
+  tft.canvas(0, 20, 320, 80);
+  tft.set_background(COLOR_BACKGROUND);
+  tft_string.set(GET_TEXT(MSG_EXTRUDER_STATUS));
+  tft_string.add(" : ");
+  tft_string.add(i16tostr3rj(currentTemperature));
+  tft_string.add(" -> ");
+  tft_string.add(i16tostr3rj(targetTemperature));
+  tft.add_text(tft_string.center(320), 15, COLOR_YELLOW, tft_string);
+
+  int temp_hotend = 0;
+  int count = 1;
+    for (uint8_t i =0; i <= 1; i++){
+      for (uint8_t j=0; j <= 2; j++){
+        if (count <= PREHEAT_COUNT){
+          tft.canvas(XX_OFFSET + PREHEAT_BTN_WIDTH * j + X_SPACING * j, 40 + YY_OFFSET + PREHEAT_BTN_HEIGHT * i + Y_SPACING * i, PREHEAT_BTN_WIDTH, PREHEAT_BTN_HEIGHT);
+          tft.set_background(COLOR_BACKGROUND);
+          // label = preheat_label[count];
+          switch (count)
+          {
+            #ifdef PREHEAT_1_LABEL
+              case 1: tft_string.set(PREHEAT_1_LABEL);
+                temp_hotend = ui.material_preset[0].hotend_temp;
+                break;
+            #endif
+            #ifdef PREHEAT_2_LABEL
+              case 2: tft_string.set(PREHEAT_2_LABEL);
+                temp_hotend = ui.material_preset[1].hotend_temp;
+                break;
+            #endif
+            #ifdef PREHEAT_3_LABEL
+              case 3: tft_string.set(PREHEAT_3_LABEL);
+                temp_hotend = ui.material_preset[2].hotend_temp;
+                break;
+            #endif
+            #ifdef PREHEAT_4_LABEL
+              case 4: tft_string.set(PREHEAT_4_LABEL);
+                temp_hotend = ui.material_preset[3].hotend_temp;
+                break;
+            #endif
+            #ifdef PREHEAT_5_LABEL
+              case 5: tft_string.set(PREHEAT_5_LABEL);
+                temp_hotend = ui.material_preset[4].hotend_temp;
+                break;
+            #endif
+            #ifdef PREHEAT_6_LABEL
+              case 6: tft_string.set(PREHEAT_6_LABEL);
+                temp_hotend = ui.material_preset[5].hotend_temp;
+                break;
+            #endif
+            default: break;
+          }
+          tft.add_image(0, 0, imgBtn90Rounded, COLOR_WHITE, COLOR_BACKGROUND, COLOR_DARKGREY);
+          tft.add_text(tft_string.center(PREHEAT_BTN_WIDTH), 15, COLOR_WHITE, tft_string);
+          TERN_(TOUCH_SCREEN, touch.add_control(HEAT_EXT, XX_OFFSET + PREHEAT_BTN_WIDTH * j + X_SPACING * j, 40 + YY_OFFSET + PREHEAT_BTN_HEIGHT * i + Y_SPACING * i, PREHEAT_BTN_WIDTH, PREHEAT_BTN_HEIGHT, intptr_t(temp_hotend)));
+          count++;
+        }
+      }
+    }
+  // if (!busy & !paused) {
+  if (!busy) {
+    tft.canvas(XX_OFFSET + PREHEAT_BTN_WIDTH * 0 + X_SPACING * 0, 20 + YY_OFFSET + PREHEAT_BTN_HEIGHT * 2 + Y_SPACING * 2, PREHEAT_BTN_WIDTH, PREHEAT_BTN_HEIGHT);
+    tft.set_background(COLOR_BACKGROUND);
+    tft_string.set("E+");
+    tft.add_image(0, 0, imgBtn90Rounded, COLOR_YELLOW, COLOR_BACKGROUND, COLOR_DARKGREY);
+    tft.add_text(tft_string.center(PREHEAT_BTN_WIDTH), 15, COLOR_YELLOW, tft_string);
+    TERN_(TOUCH_SCREEN, touch.add_control(FILAMENT_MOVE, XX_OFFSET + PREHEAT_BTN_WIDTH * 0 + X_SPACING * 0, 80 + YY_OFFSET + PREHEAT_BTN_HEIGHT * 2 + Y_SPACING * 2, PREHEAT_BTN_WIDTH, PREHEAT_BTN_HEIGHT, intptr_t(1)));
+
+
+    tft.canvas(XX_OFFSET + PREHEAT_BTN_WIDTH * 1 + X_SPACING * 1, 20 + YY_OFFSET + PREHEAT_BTN_HEIGHT * 2 + Y_SPACING * 2, PREHEAT_BTN_WIDTH, PREHEAT_BTN_HEIGHT);
+    tft.set_background(COLOR_BACKGROUND);
+    tft_string.set(GET_TEXT(MSG_STOP_BUTTON));
+    tft.add_image(0, 0, imgBtn90Rounded, COLOR_RED, COLOR_BACKGROUND, COLOR_DARKGREY);
+    tft.add_text(tft_string.center(PREHEAT_BTN_WIDTH), 15, COLOR_RED, tft_string);
+    TERN_(TOUCH_SCREEN, touch.add_control(FILAMENT_MOVE, XX_OFFSET + PREHEAT_BTN_WIDTH * 1 + X_SPACING * 1, 40 + YY_OFFSET + PREHEAT_BTN_HEIGHT * 2 + Y_SPACING * 2, PREHEAT_BTN_WIDTH, PREHEAT_BTN_HEIGHT, intptr_t(0)));
+
+
+    tft.canvas(XX_OFFSET + PREHEAT_BTN_WIDTH * 2 + X_SPACING * 2, 20 + YY_OFFSET + PREHEAT_BTN_HEIGHT * 2 + Y_SPACING * 2, PREHEAT_BTN_WIDTH, PREHEAT_BTN_HEIGHT);
+    tft.set_background(COLOR_BACKGROUND);
+    tft_string.set("E-");
+    tft.add_image(0, 0, imgBtn90Rounded, COLOR_YELLOW, COLOR_BACKGROUND, COLOR_DARKGREY);
+    tft.add_text(tft_string.center(PREHEAT_BTN_WIDTH), 15, COLOR_YELLOW, tft_string);
+    TERN_(TOUCH_SCREEN, touch.add_control(FILAMENT_MOVE, XX_OFFSET + PREHEAT_BTN_WIDTH * 2 + X_SPACING * 2, 40 + YY_OFFSET + PREHEAT_BTN_HEIGHT * 2 + Y_SPACING * 2, PREHEAT_BTN_WIDTH, PREHEAT_BTN_HEIGHT, intptr_t(-1)));
+  }
+
+
+
+  // Preheat Manual
+  tft.canvas(10, 330, 120, 64);
+  tft.set_background(COLOR_BACKGROUND);
+  tft_string.set(GET_TEXT(MSG_MANUAL_BUTTON));
+  tft.add_image(0, 0, imgBtn120Rounded, COLOR_DARK_ORANGE, COLOR_BACKGROUND, COLOR_DARKGREY);
+  tft.add_text(tft_string.center(120), 15, COLOR_DARK_ORANGE, tft_string);
+
+  // Cooling
+  tft.canvas(190, 330, 120, 64);
+  tft.set_background(COLOR_BACKGROUND);
+  tft_string.set(GET_TEXT(MSG_COOLING_BUTTON));
+  tft.add_image(0, 0, imgBtn120Rounded, COLOR_BLUE, COLOR_BACKGROUND, COLOR_DARKGREY);
+  tft.add_text(tft_string.center(120), 15, COLOR_BLUE, tft_string);
+
+  TERN_(TOUCH_SCREEN, touch.add_control(HEAT_EXT, 190, 330, 120, 64, intptr_t(0)));
+  TERN_(TOUCH_SCREEN, touch.add_control(HEATER_MANUAL, 10, 330, 120, 64, intptr_t(H_E0)));
+  TERN_(HAS_TFT_XPT2046, add_control(TFT_WIDTH - 10 - 64 - 8, 420, BACK, imgBack));
+
+}
+
+void MarlinUI::bed_screen() {
+
+  celsius_t currentTemperature, targetTemperature;
+  currentTemperature = thermalManager.wholeDegBed();
+  targetTemperature = thermalManager.degTargetBed();
+
+  // ui.clear_lcd();
+  TERN_(TOUCH_SCREEN, touch.clear());
+
+  defer_status_screen(true);
+  //
+
+  tft.canvas(0, 20, 320, 80);
+  tft.set_background(COLOR_BACKGROUND);
+  tft_string.set(GET_TEXT(MSG_BED_STATUS));
+  tft_string.add(" : ");
+  tft_string.add(i16tostr3rj(currentTemperature));
+  tft_string.add(" -> ");
+  tft_string.add(i16tostr3rj(targetTemperature));
+  tft.add_text(tft_string.center(320), 15, COLOR_YELLOW, tft_string);
+
+  int temp_bed = 0;
+  int count = 1;
+    for (uint8_t i =0; i <= 1; i++){
+      for (uint8_t j=0; j <= 2; j++){
+        if (count <= PREHEAT_COUNT){
+          tft.canvas(XX_OFFSET + PREHEAT_BTN_WIDTH * j + X_SPACING * j, 40 + YY_OFFSET + PREHEAT_BTN_HEIGHT * i + Y_SPACING * i, PREHEAT_BTN_WIDTH, PREHEAT_BTN_HEIGHT);
+          tft.set_background(COLOR_BACKGROUND);
+          // label = preheat_label[count];
+          switch (count)
+          {
+            #ifdef PREHEAT_1_LABEL
+              case 1: tft_string.set(PREHEAT_1_LABEL);
+                temp_bed = ui.material_preset[0].bed_temp;
+                break;
+            #endif
+            #ifdef PREHEAT_2_LABEL
+              case 2: tft_string.set(PREHEAT_2_LABEL);
+                temp_bed = ui.material_preset[1].bed_temp;
+                break;
+            #endif
+            #ifdef PREHEAT_3_LABEL
+              case 3: tft_string.set(PREHEAT_3_LABEL);
+                temp_bed = ui.material_preset[2].bed_temp;
+                break;
+            #endif
+            #ifdef PREHEAT_4_LABEL
+              case 4: tft_string.set(PREHEAT_4_LABEL);
+                temp_bed = ui.material_preset[3].bed_temp;
+                break;
+            #endif
+            #ifdef PREHEAT_5_LABEL
+              case 5: tft_string.set(PREHEAT_5_LABEL);
+                temp_bed = ui.material_preset[4].bed_temp;
+                break;
+            #endif
+            #ifdef PREHEAT_6_LABEL
+              case 6: tft_string.set(PREHEAT_6_LABEL);
+                temp_bed = ui.material_preset[5].bed_temp;
+                break;
+            #endif
+            default: break;
+          }
+          tft.add_image(0, 0, imgBtn90Rounded, COLOR_WHITE, COLOR_BACKGROUND, COLOR_DARKGREY);
+          tft.add_text(tft_string.center(PREHEAT_BTN_WIDTH), 15, COLOR_WHITE, tft_string);
+          TERN_(TOUCH_SCREEN, touch.add_control(HEAT_BED, XX_OFFSET + PREHEAT_BTN_WIDTH * j + X_SPACING * j, 40 + YY_OFFSET + PREHEAT_BTN_HEIGHT * i + Y_SPACING * i, PREHEAT_BTN_WIDTH, PREHEAT_BTN_HEIGHT, intptr_t(temp_bed)));
+          count++;
+        }
+      }
+    }
+
+  // Preheat Manual
+  tft.canvas(10, 330, 120, 64);
+  tft.set_background(COLOR_BACKGROUND);
+  tft_string.set(GET_TEXT(MSG_MANUAL_BUTTON));
+  tft.add_image(0, 0, imgBtn120Rounded, COLOR_DARK_ORANGE, COLOR_BACKGROUND, COLOR_DARKGREY);
+  tft.add_text(tft_string.center(120), 15, COLOR_DARK_ORANGE, tft_string);
+
+  // Cooling
+  tft.canvas(190, 330, 120, 64);
+  tft.set_background(COLOR_BACKGROUND);
+  tft_string.set(GET_TEXT(MSG_COOLING_BUTTON));
+  tft.add_image(0, 0, imgBtn120Rounded, COLOR_BLUE, COLOR_BACKGROUND, COLOR_DARKGREY);
+  tft.add_text(tft_string.center(120), 15, COLOR_BLUE, tft_string);
+
+  TERN_(TOUCH_SCREEN, touch.add_control(HEAT_BED, 190, 330, 120, 64, intptr_t(0)));
+  TERN_(TOUCH_SCREEN, touch.add_control(HEATER_MANUAL, 10, 330, 120, 64, intptr_t(H_BED)));
+  TERN_(HAS_TFT_XPT2046, add_control(TFT_WIDTH - 10 - 64 - 8, 420, BACK, imgBack));
+}
+
 
 #if HAS_MESH
 
