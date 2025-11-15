@@ -350,7 +350,7 @@ QUICK_ACCESS_BEGIN(StatusQuickAccessIdle,
 
   #if ENABLED(EEPROM_SETTINGS)
     QUICK_ACCESS_BUTTON_BEGIN();
-      add_control(BTN_X, BTN_Y, ui.store_settings, imgSave);
+      add_control(BTN_X, BTN_Y, EEPROM_SAVE, imgSave);
     QUICK_ACCESS_BUTTON_END();
   #endif
 
