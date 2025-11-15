@@ -57,6 +57,9 @@ enum TouchControlType : uint16_t {
   EEPROM_SAVE,
   BED_Z,
   CASE_LIGHT,
+  FAN_MANUAL,
+  FAN_PRESET,
+  CHAMBER_FAN,
   BUTTON
 };
 

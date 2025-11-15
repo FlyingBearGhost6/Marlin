@@ -718,6 +718,94 @@ void MenuItem_confirm::draw_select_screen(FSTR_P const yes, FSTR_P const no, con
 
 #endif // ADVANCED_PAUSE_FEATURE
 
+
+QUICK_ACCESS_BEGIN(
+  FanQuickAccessButtons,
+  PREHEAR_ORIGIN_X, /* ORIGIN_X */
+  PREHEAR_ORIGIN_Y, /* ORIGIN_Y */
+  PREHEAT_BTN_WIDTH + PREHEAT_BTN_SPACING, /* WIDTH */
+  PREHEAT_BTN_HEIGHT + PREHEAT_BTN_SPACING, /* HEIGHT */
+  3, /* COLUMNS */
+  2 /* ROWS */
+)
+  constexpr uint8_t FAN_PRESET_VALUES[] = { 0, 64, 128, 191, 255 };
+  constexpr uint8_t FAN_PRESET_COUNT = sizeof(FAN_PRESET_VALUES) / sizeof(FAN_PRESET_VALUES[0]);
+
+  for (uint8_t preset_index = 0; preset_index < FAN_PRESET_COUNT; ++preset_index) {
+    QUICK_ACCESS_BUTTON_BEGIN();
+      tft.canvas(BTN_X, BTN_Y, PREHEAT_BTN_WIDTH, PREHEAT_BTN_HEIGHT);
+      tft.set_background(COLOR_BACKGROUND);
+      tft.add_rectangle(0, 0, PREHEAT_BTN_WIDTH, PREHEAT_BTN_HEIGHT, COLOR_WHITE);
+
+      tft_string.set(ui8tostr4pctrj(FAN_PRESET_VALUES[preset_index]));
+      tft.add_text(tft_string.center(PREHEAT_BTN_WIDTH), 15, COLOR_WHITE, tft_string);
+      TERN_(TOUCH_SCREEN, touch.add_control(FAN_PRESET, BTN_X, BTN_Y, PREHEAT_BTN_WIDTH, PREHEAT_BTN_HEIGHT, FAN_PRESET_VALUES[preset_index]));
+    QUICK_ACCESS_BUTTON_END();
+  }
+
+  QUICK_ACCESS_BUTTON_BEGIN();
+    tft.canvas(BTN_X, BTN_Y, PREHEAT_BTN_WIDTH, PREHEAT_BTN_HEIGHT);
+    tft.set_background(COLOR_BACKGROUND);
+    tft.add_rectangle(0, 0, PREHEAT_BTN_WIDTH, PREHEAT_BTN_HEIGHT, COLOR_WHITE);
+
+    tft_string.set(GET_TEXT(MSG_TUNE));
+    tft.add_text(tft_string.center(PREHEAT_BTN_WIDTH), 15, COLOR_WHITE, tft_string);
+    TERN_(TOUCH_SCREEN, touch.add_control(FAN_MANUAL, BTN_X, BTN_Y, PREHEAT_BTN_WIDTH, PREHEAT_BTN_HEIGHT));
+  QUICK_ACCESS_BUTTON_END();
+
+QUICK_ACCESS_END(FanQuickAccessButtons)
+
+
+void MarlinUI::fan_screen() {
+
+  TERN_(TOUCH_SCREEN, touch.clear());
+
+  defer_status_screen(true);
+  //
+
+  tft.canvas(0, 20, TFT_WIDTH, 80);
+  tft.set_background(COLOR_BACKGROUND);
+  tft_string.set(GET_TEXT(MSG_FAN_SPEED));
+  tft_string.add(" : ");
+  tft_string.add(ui8tostr4pctrj(thermalManager.fan_speed[0]));
+  tft.add_text(tft_string.center(TFT_WIDTH), 15, COLOR_YELLOW, tft_string);
+
+  FanQuickAccessButtons::draw();
+
+  tft.canvas(0, 240, TFT_WIDTH, 60);
+  tft.set_background(COLOR_BACKGROUND);
+  tft_string.set(GET_TEXT(MSG_CHAMBER_FAN));
+  tft_string.add(" : ");
+  tft.add_text(tft_string.center(TFT_WIDTH) - 20, 15, COLOR_YELLOW, tft_string);
+
+  #if FAN_COUNT > 1
+    if (thermalManager.fan_speed[1] == 255) {
+      tft_string.set(GET_TEXT(MSG_LCD_ON));
+      tft.add_text(235, 15, COLOR_GREEN, tft_string);
+    } else {
+      tft_string.set(GET_TEXT(MSG_LCD_OFF));
+      tft.add_text(235, 15, COLOR_RED, tft_string);
+    }
+
+    tft.canvas(10, 300, PREHEAT_LARGE_BTN_WIDTH, PREHEAT_LARGE_BTN_HEIGHT);
+    tft.set_background(COLOR_BACKGROUND);
+    tft.add_rectangle(0, 0, PREHEAT_LARGE_BTN_WIDTH, PREHEAT_LARGE_BTN_HEIGHT, COLOR_WHITE);
+    tft_string.set(GET_TEXT(MSG_LCD_ON));
+    tft.add_text(tft_string.center(PREHEAT_LARGE_BTN_WIDTH), 15, COLOR_GREEN, tft_string);
+    TERN_(TOUCH_SCREEN, touch.add_control(CHAMBER_FAN, 10, 300, PREHEAT_LARGE_BTN_WIDTH, PREHEAT_LARGE_BTN_HEIGHT, true));
+
+    tft.canvas(180, 300, PREHEAT_LARGE_BTN_WIDTH, PREHEAT_LARGE_BTN_HEIGHT);
+    tft.set_background(COLOR_BACKGROUND);
+    tft.add_rectangle(0, 0, PREHEAT_LARGE_BTN_WIDTH, PREHEAT_LARGE_BTN_HEIGHT, COLOR_WHITE);
+    tft_string.set(GET_TEXT(MSG_LCD_OFF));
+    tft.add_text(tft_string.center(PREHEAT_LARGE_BTN_WIDTH), 15, COLOR_RED, tft_string);
+    TERN_(TOUCH_SCREEN, touch.add_control(CHAMBER_FAN, 180, 300, PREHEAT_LARGE_BTN_WIDTH, PREHEAT_LARGE_BTN_HEIGHT, false));
+  #endif
+
+  TERN_(HAS_TFT_XPT2046, add_control(TFT_WIDTH - 10 - 64 - 8, 420, BACK, imgBack));
+
+}
+
 #if HAS_MESH
 
   #if ENABLED(MESH_BED_LEVELING)
