@@ -54,6 +54,7 @@ enum TouchControlType : uint16_t {
   STOP,
   RESUME_PRINT,
   PAUSE_PRINT,
+  EEPROM_SAVE,
   BED_Z,
   CASE_LIGHT,
   BUTTON

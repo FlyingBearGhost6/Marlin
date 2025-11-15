@@ -275,6 +275,12 @@ void Touch::touch(touch_control_t * const control) {
 
     } break;
 
+    #if ENABLED(EEPROM_SETTINGS)
+    case EEPROM_SAVE:
+      ui.store_settings();
+      break;
+    #endif
+
     case FAN: {
       ui.clear_for_drawing();
       static uint8_t fan, fan_speed;
