@@ -711,6 +711,8 @@ public:
     static void return_to_status();
     static bool on_status_screen() { return currentScreen == status_screen; }
     static bool on_fan_screen() { return currentScreen == fan_screen; }
+    static bool on_heater_screen() { return currentScreen == heater_screen; }
+    static bool on_bed_screen() { return currentScreen == bed_screen; }
 
     FORCE_INLINE static void run_current_screen() { (*currentScreen)(); }
 
@@ -903,10 +905,8 @@ public:
     #endif
   #endif
 
-  // static void heater_screen();
-
-  // static void bed_screen();
-
+  static void heater_screen();
+  static void bed_screen();
   static void fan_screen();
 
 private:

@@ -63,6 +63,8 @@ const tImage images[imgCount] = {
   Home_64x64x4,                                            // imgHome
   BtnRounded_64x52x4,                                      // imgBtn52Rounded
   BtnRounded_42x39x4,                                      // imgBtn39Rounded
+  BtnRounded_90x64x4,                                      // imgBtn90Rounded
+  BtnRounded_120x64x4,                                     // imgBtn120Rounded
   Time_Elapsed_32x32x4,                                    // imgTimeElapsed
   Time_Remaining_32x32x4,                                  // imgTimeRemaining
   Feedrate_64x64x4,                                        // imgFeedRate64
@@ -80,6 +82,7 @@ const tImage images[imgCount] = {
   Pause_64x64x4,                                           // imgPause
   Fixed_time_motion_64x64x4,                               // imgFixedTimeMotion
   Autobed_64x64x16,                                        // imgAutobed
+  BtnBabystep_64x64x4,                                     // imgBtnBabystep
 };
 
 #endif // HAS_GRAPHICAL_TFT
