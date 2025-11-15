@@ -303,3 +303,12 @@
     #define UBL_ACTION_Y            332
   #endif
 #endif
+
+/* MarlinUI::fan_screen() */
+#define PREHEAR_ORIGIN_X 16
+#define PREHEAR_ORIGIN_Y 90
+#define PREHEAT_BTN_SPACING 10
+#define PREHEAT_BTN_WIDTH 90
+#define PREHEAT_BTN_HEIGHT 64
+#define PREHEAT_LARGE_BTN_WIDTH   120
+#define PREHEAT_LARGE_BTN_HEIGHT  64
