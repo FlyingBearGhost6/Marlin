@@ -458,11 +458,15 @@ G29_TYPE GcodeSuite::G29() {
           rts.gotoPage(ID_ABL_HeatWait_L, ID_ABL_HeatWait_D);
         #endif
         #if HAS_GRAPHICAL_TFT && ENABLED(AUTO_BED_LEVELING_BILINEAR)
-          ui.g29_preheat_screen();
+          ui.push_current_screen();
+          ui.goto_screen(ui.g29_preheat_screen);
         #endif
         if (!abl.dryrun) probe.preheat_for_probing(LEVELING_NOZZLE_TEMP,
           TERN(EXTENSIBLE_UI, ExtUI::getLevelingBedTemp(), LEVELING_BED_TEMP)
         );
+        #if HAS_GRAPHICAL_TFT && ENABLED(AUTO_BED_LEVELING_BILINEAR)
+          ui.go_back();
+        #endif
       #endif
     }
 

@@ -141,7 +141,7 @@ void MarlinUI::draw_kill_screen() {
   tft.queue.sync();
 }
 
-void draw_heater_status(uint16_t x, uint16_t y, const int8_t heater) {
+void draw_heater_status(uint16_t x, uint16_t y, const int8_t heater, bool interactive) {
   MarlinImage image = imgHotEnd;
   celsius_t currentTemperature, targetTemperature;
 
@@ -177,7 +177,7 @@ void draw_heater_status(uint16_t x, uint16_t y, const int8_t heater) {
   #endif
   else return;
 
-  TERN_(TOUCH_SCREEN, if (targetTemperature >= 0) touch.add_control(HEATER, x, y, TEMP_FAN_CONTROL_W, TEMP_FAN_CONTROL_H, heater));
+  TERN_(TOUCH_SCREEN, if (targetTemperature >= 0 && interactive) touch.add_control(HEATER, x, y, TEMP_FAN_CONTROL_W, TEMP_FAN_CONTROL_H, heater));
   tft.canvas(x, y, TEMP_FAN_CONTROL_W, TEMP_FAN_CONTROL_H);
   tft.set_background(COLOR_BACKGROUND);
 
@@ -1042,8 +1042,7 @@ void MarlinUI::bed_screen() {
         tft_string.set(GET_TEXT_F(MSG_HOMING));
         tft_string.trim();
         tft.add_text(tft_string.center(TFT_WIDTH), TFT_HEIGHT / 2, COLOR_STATUS_MESSAGE, tft_string);
-        const bool homed = all_axes_homed();
-        queue.inject(homed ? F("G29") : F("G29N"));
+        queue.inject(F("G28\nG29"));
       #endif
     }
 
@@ -1054,8 +1053,9 @@ void MarlinUI::bed_screen() {
 
       if (view_only) {
         ui.draw_mesh_grid(GRID_MAX_POINTS_X, GRID_MAX_POINTS_Y, bedlevel.z_values, true);
-        add_control(TFT_WIDTH - 4 - 64 - 8, 385, BACK, imgBack);
-        drawBtn(4, 380, "RUN", remesh, imgCancel, COLOR_WHITE, true);
+        add_control(TFT_WIDTH - 4 - 64 - 8, 375, BACK, imgBack);
+        const char * label = (const char *)GET_TEXT_F(MSG_G29_REMESH);
+        drawBtn(10, 370, label, (intptr_t)remesh, imgBtn120Rounded, imgBtn120Rounded, COLOR_WHITE, true);
         tft_string.set(GET_TEXT_F(MSG_G29_VIEW));
       }
       else {
@@ -1158,7 +1158,31 @@ void MarlinUI::bed_screen() {
         tft.set_background(COLOR_BACKGROUND);
         tft_string.set(GET_TEXT_F(MSG_PREHEATING));
         tft_string.trim();
-        tft.add_text(tft_string.center(TFT_WIDTH), TFT_HEIGHT / 2, COLOR_STATUS_MESSAGE, tft_string);
+        tft.add_text(tft_string.center(TFT_WIDTH), TFT_HEIGHT / 3, COLOR_STATUS_MESSAGE, tft_string);
+
+        // Draw heater and bed status centered below the message
+        uint8_t items_to_draw = 0;
+        #if HAS_EXTRUDERS
+          items_to_draw++;
+        #endif
+        #if HAS_HEATED_BED
+          items_to_draw++;
+        #endif
+
+        if (items_to_draw > 0) {
+          const uint16_t gap = 30;
+          const uint16_t total_w = items_to_draw * TEMP_FAN_CONTROL_W + (items_to_draw - 1) * gap;
+          uint16_t x = (TFT_WIDTH > total_w) ? (TFT_WIDTH - total_w) / 2 : 0;
+          const uint16_t y = (TFT_HEIGHT / 3) + 30;
+
+          #if HAS_EXTRUDERS
+            draw_heater_status(x, y, H_E0);
+            x += TEMP_FAN_CONTROL_W + gap;
+          #endif
+          #if HAS_HEATED_BED
+            draw_heater_status(x, y, H_BED);
+          #endif
+        }
       }
 
     #endif

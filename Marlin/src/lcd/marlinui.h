@@ -713,6 +713,9 @@ public:
     static bool on_fan_screen() { return currentScreen == fan_screen; }
     static bool on_heater_screen() { return currentScreen == heater_screen; }
     static bool on_bed_screen() { return currentScreen == bed_screen; }
+    #if HAS_MESH && ENABLED(AUTO_BED_LEVELING_BILINEAR) && ENABLED(PREHEAT_BEFORE_LEVELING)
+      static bool on_g29_preheat_screen() { return currentScreen == g29_preheat_screen; }
+    #endif
 
     FORCE_INLINE static void run_current_screen() { (*currentScreen)(); }
 
