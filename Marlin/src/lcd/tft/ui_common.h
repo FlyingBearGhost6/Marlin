@@ -146,7 +146,7 @@ void disable_steppers();
   #endif
 #endif
 
-void draw_heater_status(uint16_t x, uint16_t y, const int8_t heater);
+void draw_heater_status(uint16_t x, uint16_t y, const int8_t heater, bool interactive = true);
 void draw_fan_status(uint16_t x, uint16_t y, const bool blink);
 
 void text_line(const uint16_t y, uint16_t color=COLOR_BACKGROUND);

@@ -1132,6 +1132,35 @@ void MarlinUI::init() {
         TERN_(HAS_MARLINUI_U8GLIB, drawing_screen = false);
       }
 
+      if (on_heater_screen() && !lcd_status_update_delay--) {
+        lcd_status_update_delay = TERN(HAS_MARLINUI_U8GLIB, 12, 9);
+        if (max_display_update_time) max_display_update_time--;  // Be sure never go to a very big number
+        refresh(LCDVIEW_REDRAW_NOW);
+        TERN_(HAS_MARLINUI_U8GLIB, drawing_screen = false);
+      }
+      if (on_bed_screen() && !lcd_status_update_delay--) {
+        lcd_status_update_delay = TERN(HAS_MARLINUI_U8GLIB, 12, 9);
+        if (max_display_update_time) max_display_update_time--;  // Be sure never go to a very big number
+        refresh(LCDVIEW_REDRAW_NOW);
+        TERN_(HAS_MARLINUI_U8GLIB, drawing_screen = false);
+      }
+
+      if (on_fan_screen() && !lcd_status_update_delay--) {
+        lcd_status_update_delay = TERN(HAS_MARLINUI_U8GLIB, 12, 9);
+        if (max_display_update_time) max_display_update_time--;  // Be sure never go to a very big number
+        refresh(LCDVIEW_REDRAW_NOW);
+        TERN_(HAS_MARLINUI_U8GLIB, drawing_screen = false);
+      }
+
+      #if HAS_MESH && ENABLED(AUTO_BED_LEVELING_BILINEAR) && ENABLED(PREHEAT_BEFORE_LEVELING)
+        if (on_g29_preheat_screen() && !lcd_status_update_delay--) {
+          lcd_status_update_delay = TERN(HAS_MARLINUI_U8GLIB, 12, 9);
+          if (max_display_update_time) max_display_update_time--;  // Be sure never go to a very big number
+          refresh(LCDVIEW_REDRAW_NOW);
+          TERN_(HAS_MARLINUI_U8GLIB, drawing_screen = false);
+        }
+      #endif
+
       #if MARLINUI_SCROLL_NAME
         // If scrolling of long file names is enabled and we are in the sd card menu,
         // cause a refresh to occur until all the text has scrolled into view.

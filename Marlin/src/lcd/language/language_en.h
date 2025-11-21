@@ -383,6 +383,7 @@ namespace LanguageNarrow_en {
   LSTR MSG_STORED_FAN_N                   = _UxGT("Stored Fan ~");
   LSTR MSG_EXTRA_FAN_SPEED                = _UxGT("Extra Fan Speed");
   LSTR MSG_EXTRA_FAN_SPEED_N              = _UxGT("Extra Fan Speed ~");
+  LSTR MSG_CHAMBER_FAN                    = _UxGT("Chamber Fan");
   LSTR MSG_CONTROLLER_FAN                 = _UxGT("Controller Fan");
   LSTR MSG_CONTROLLER_FAN_IDLE_SPEED      = _UxGT("Idle Speed");
   LSTR MSG_CONTROLLER_FAN_AUTO_ON         = _UxGT("Auto Mode");
@@ -1139,6 +1140,13 @@ namespace LanguageNarrow_en {
 
   LSTR MSG_G29_PROCESSING				          = _UxGT("Autoleveling...");
   LSTR MSG_G29_VIEW  				              = _UxGT("View current mesh");
+  LSTR MSG_G29_REMESH                     = _UxGT("Remesh");
+
+  LSTR MSG_EXTRUDER_STATUS                = _UxGT("Extruder");
+  LSTR MSG_MANUAL_BUTTON                  = _UxGT("Manual");
+  LSTR MSG_BED_STATUS                     = _UxGT("Bed Status");
+  LSTR MSG_COOLING_BUTTON                 = _UxGT("Cooling");
+  LSTR MSG_STOP_BUTTON                    = _UxGT("Stop");
 }
 
 namespace LanguageWide_en {

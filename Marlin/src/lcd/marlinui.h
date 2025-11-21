@@ -710,6 +710,13 @@ public:
 
     static void return_to_status();
     static bool on_status_screen() { return currentScreen == status_screen; }
+    static bool on_fan_screen() { return currentScreen == fan_screen; }
+    static bool on_heater_screen() { return currentScreen == heater_screen; }
+    static bool on_bed_screen() { return currentScreen == bed_screen; }
+    #if HAS_MESH && ENABLED(AUTO_BED_LEVELING_BILINEAR) && ENABLED(PREHEAT_BEFORE_LEVELING)
+      static bool on_g29_preheat_screen() { return currentScreen == g29_preheat_screen; }
+    #endif
+
     FORCE_INLINE static void run_current_screen() { (*currentScreen)(); }
 
     #if ENABLED(LIGHTWEIGHT_UI)
@@ -888,20 +895,22 @@ public:
     static void touch_calibration_screen();
   #endif
 
-  #if HAS_GRAPHICAL_TFT
-    static void move_axis_screen();
-    #if HAS_MESH
-      static void mesh_view_screen();
-      static void draw_mesh_grid(const uint8_t x_pos, const uint8_t y_pos, const bed_mesh_t mesh, const bool probe_done);
-      #if ENABLED(AUTO_BED_LEVELING_BILINEAR)
-        static void g29_leveling_screen();
-        static void g29_leveling_screen_complete(const bool success);
-        #if ENABLED(PREHEAT_BEFORE_LEVELING)
-          static void g29_preheat_screen();
-        #endif
+  static void move_axis_screen();
+  #if HAS_MESH
+    static void mesh_view_screen();
+    static void draw_mesh_grid(const uint8_t x_pos, const uint8_t y_pos, const bed_mesh_t mesh, const bool probe_done);
+    #if ENABLED(AUTO_BED_LEVELING_BILINEAR)
+      static void g29_leveling_screen();
+      static void g29_leveling_screen_complete(const bool success);
+      #if ENABLED(PREHEAT_BEFORE_LEVELING)
+        static void g29_preheat_screen();
       #endif
     #endif
   #endif
+
+  static void heater_screen();
+  static void bed_screen();
+  static void fan_screen();
 
 private:
 
